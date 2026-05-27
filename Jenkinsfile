@@ -23,10 +23,15 @@ pipeline {
                 }
             }
         }
-        stage('Build Images'){
+        stage('Check docker compose version'){
             steps{
-                sh "VERSION=${VERSION} docker compose build"
+                sh 'docker compose version'
             }
         }
+        // stage('Build Images'){
+        //     steps{
+        //         sh "VERSION=${VERSION} docker compose build"
+        //     }
+        // }
     }
 }
