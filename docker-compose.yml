@@ -1,0 +1,65 @@
+version: '3'
+services:
+  emp_backend:
+    container_name: employee_project_be
+    image: sujeeeth29/employee_project_be:${VERSION}
+    build:
+      context: ./backend
+    ports:
+      - 8080:8080
+    networks:
+      - employee
+    environment:
+      - MYSQL_HOST=emp_db
+      - MYSQL_DB=employee_management
+      - MYSQL_USER=employee_admin
+      - MYSQL_PASSWORD=User123
+      - MYSQL_PORT=3306
+      - MYSQL_SSL_MODE=false
+      - JWT_SECRET=mySuperSecretKey123456789
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/employees"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      emp_db: 
+        condition: service_healthy
+  emp_frontend:
+    container_name: employee_project_fe
+    image: sujeeeth29/employee_project_fe:${VERSION}
+    build:
+      context: ./frontend
+    ports:
+      - 80:80
+    depends_on:
+      emp_backend:
+        condition: service_healthy
+      emp_db:
+        condition: service_healthy  
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - employee
+  emp_db:
+    container_name: employee_project_data
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=employee_management
+      - MYSQL_PASSWORD=User123
+      - MYSQL_USER=employee_admin
+      - MYSQL_ROOT_PASSWORD=Admin123
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pAdmin123"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    networks:
+      - employee
+networks:
+  employee:
+  

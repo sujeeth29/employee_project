@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+    environment {
+        build_number = "${env.BUILD_NUMBER}"
+        commit = "${env.GIT_COMMIT.take(7)}"
+        Image_name = "sujeeeth29/employee_project_fe"
+        CONTAINER_NAME = "employee_project_fe"
+    }
+    stages {
+        stage('Cleanworkspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Environment Variables'){
+            steps{
+                script{
+                    echo "Build Number: ${build_number}"
+                    echo "Commit message: ${commit}"
+                    echo "Image Tag: ${build_number}_${commit}" 
+                    echo "Image Name: ${Image_name}"
+                }
+            }
+        }
+        stage("checkout"){
+            steps{
+                checkout scm
+            }
+        }
+        stage ('Checking files'){
+            steps{
+                script{
+                    sh 'pwd && ls -al'
+                }
+            }
+        }
+        stage('Build Image'){
+            steps{
+                script{
+                    sh "docker build -t ${Image_name}:${build_number}_${commit} ."
+                }
+            }
+        }
+        stage('Docker login'){
+            steps{
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+                    sh """
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+                    """
+                }
+            }
+        }
+        stage('Tag the Image'){
+            steps{
+                sh "docker image tag ${Image_name}:${build_number}_${commit} ${Image_name}:${build_number}_${commit}"
+            }
+        }
+        stage('Push Image'){
+            steps{
+                sh "docker push ${Image_name}:${build_number}_${commit}"
+            }
+        }
+        stage('Stop previous Docker container'){
+            steps{
+                    sh """
+                        echo "checking Container status"
+                        if [ "\$(docker ps -aq -f name=${CONTAINER_NAME})" ]; then
+                            echo "Container exists"
+                            if [ "\$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+                                echo "Stopping running container "
+                                docker stop ${CONTAINER_NAME}
+                            fi
+                            echo "Removing container"
+                            docker rm ${CONTAINER_NAME}
+                        else
+                            echo "No container exists"
+                        fi
+                        echo "Starting new container"
+                        docker run --name ${CONTAINER_NAME} --network employee_project -d -p 80:80 ${Image_name}:${build_number}_${commit}
+                    """
+            }
+        }
+    }
+}

@@ -1,0 +1,203 @@
+pipeline{
+    agent any
+
+    tools {
+        maven 'maven-3.8.6'
+    }
+
+    environment {
+        Image_name = 'sujeeeth29/employee_project_be'
+        build_number = "${env.BUILD_NUMBER}"
+        commit = "${env.GIT_COMMIT.take(7)}"
+        CONTAINER_NAME = 'employee_project_be'
+        HOST = credentials('MYSQL_HOST')
+        DB = credentials('MYSQL_DB')
+        // DBCREDS = credentials('DB_CREDS')
+        PSWD = credentials('MYSQL_PASSWORD')
+        USER = credentials('MYSQL_USER')
+        PORT = credentials('MYSQL_PORT')
+        JWT = credentials('JWT_SECRET')
+    }
+
+    stages{
+        stage('Clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('Checkout'){
+            steps{
+                checkout scm
+            }
+        }
+        stage('Check environment variables'){
+            steps{
+                script{
+                    echo "Build number: ${build_number}"
+                    echo "Commit: ${commit}"
+                    echo "Image name: ${Image_name}"
+                    echo "Container Name: ${CONTAINER_NAME}"
+                    echo "Complete Image Tag: ${Image_name}:${build_number}_${commit}"
+                }
+            }
+        }
+        stage('Maven validate'){
+            steps{
+                sh 'mvn validate'
+            }
+        }
+        stage('Maven compile'){
+            steps{
+                sh 'mvn compile'
+            }
+        }
+        stage('Maven tests'){
+            steps{
+                sh 'mvn test'
+            }
+        }
+        stage('Build Image'){
+            steps{
+                script{
+                    sh "docker build -t ${Image_name}:${build_number}_${commit} ."
+                }
+            }
+        }
+        stage('Tag Image'){
+            steps{
+                script{
+                    sh "docker image tag ${Image_name}:${build_number}_${commit} ${Image_name}:${build_number}_${commit}"
+                }
+            }
+        }
+        stage('Docker login'){
+            steps{
+                withCredentials ([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+                    sh """
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+                    """
+                }
+            }
+        }
+        stage('Push Image'){
+            steps{
+                sh "docker push ${Image_name}:${build_number}_${commit}"
+            }
+        }
+        stage('Deployment'){
+            steps{
+                withCredentials ([
+                    string(credentialsId: 'MYSQL_HOST', variable: 'host'),
+                    string(credentialsId: 'MYSQL_PORT', variable: 'port'),
+                    string(credentialsId: 'MYSQL_USER', variable: 'user'),
+                    string(credentialsId: 'MYSQL_PASSWORD', variable: 'pswd'),
+                    string(credentialsId: 'MYSQL_DB', variable: 'db'),
+                    string(credentialsId: 'JWT_SECRET', variable: 'jwt')
+                ]) {
+                sh """
+                    echo "Checking previous container status"
+                    if [ "\$(docker ps -aq -f name=${CONTAINER_NAME})" ]; then
+                        echo "Container exists"
+                        if [ "\$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+                            echo "Stopping container"
+                            docker stop ${CONTAINER_NAME}
+                        fi
+                        echo "Removing container"
+                        docker rm ${CONTAINER_NAME}
+                    else
+                        echo "No container exists"
+                    fi
+                    echo "Starting new container"
+                    docker run --name ${CONTAINER_NAME} --network employee_project \
+                    -e MYSQL_HOST=${host} \
+                    -e MYSQL_PORT=${port} \
+                    -e MYSQL_DB=${db} \
+                    -e MYSQL_USER=${user} \
+                    -e MYSQL_PASSWORD=${pswd} \
+                    -e MYSQL_SSL_MODE=false \
+                    -e JWT_SECRET=${jwt} \
+                    -d -p 8080:8080 ${Image_name}:${build_number}_${commit}
+                """
+                }
+            }
+        }
+        // stage('Deployment'){
+        //     steps{
+        //         // withEnv([
+        //         //     "user=${DBCREDS_USR}",
+        //         //     "pswd=${DBCREDS_PSW}",
+        //         //     "jwt=${JWT}",
+        //         //     "host=${HOST}",
+        //         //     "post=${PORT}",
+        //         //     "db=${DB}"
+        //         // ]) {
+        //             sh ''' 
+        //             echo 'Checking container exists'
+        //             if [ "$(docker ps -aq -f name=''' + CONTAINER_NAME + ''')" ]; then
+        //                 echo "Container exists"
+        //                 if [ "$(docker ps -q -f name=''' + CONTAINER_NAME + ''')" ]; then
+        //                     echo "Container is running stopping it"
+        //                     docker stop ''' + CONTAINER_NAME + '''
+        //                 fi
+        //                 echo "Removing container"
+        //                 docker rm ''' + CONTAINER_NAME + '''
+        //             else
+        //                 echo "Container doesn't exists"
+        //             fi
+        //             echo "Starting new container"
+        //             docker run --name ''' + CONTAINER_NAME + ''' \
+        //             -e MYSQL_HOST=${HOST} \
+        //             -e MYSQL_PORT=${PORT} \
+        //             -e MYSQL_DB=${DB} \
+        //             -e MYSQL_USER=${USER} \
+        //             -e MYSQL_PASSWORD=${PSWD} \
+        //             -e MYSQL_SSL_MODE=false \
+        //             -e JWT_SECRET=${JWT} \
+        //             -d -p 8080:8080 ''' +Image_name + ':' + build_number +'_' + commit + '''
+        //             '''
+                
+        //     }
+        // }
+        // stage('Deployment'){
+        //     steps{
+        //         withCredentials ([
+        //             string(credentialsId: 'MYSQL_HOST', variable: 'host'),
+        //             string(credentialsId: 'MYSQL_PORT', variable: 'port'),
+        //             string(credentialsId: 'MYSQL_USER', variable: 'user'),
+        //             string(credentialsId: 'MYSQL_PASSWORD', variable: 'pswd'),
+        //             string(credentialsId: 'MYSQL_DB', variable: 'db'),
+        //             string(credentialsId: 'JWT_SECRET', variable: 'jwt')
+        //         ]) {
+        //         sh """
+        //             echo "Checking previous container status"
+        //             if [ "\$(docker ps -aq -f name=${CONTAINER_NAME})" ]; then
+        //                 echo "Container exists"
+        //                 if [ "\$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+        //                     echo "Stopping container"
+        //                     docker stop ${CONTAINER_NAME}
+        //                 fi
+        //                 echo "Removing container"
+        //                 docker rm ${CONTAINER_NAME}
+        //             else
+        //                 echo "No container exists"
+        //             fi
+        //             echo "Starting new container"
+        //             docker run --name ${CONTAINER_NAME} --network employee_project \
+        //             -e MYSQL_HOST="\$host" \
+        //             -e MYSQL_PORT="\$port" \
+        //             -e MYSQL_DB="\$db" \
+        //             -e MYSQL_USER="\$user" \
+        //             -e MYSQL_PASSWORD="\$pswd" \
+        //             -e MYSQL_SSL_MODE=false \
+        //             -e JWT_SECRET="\$jwt" \
+        //             -d -p 8080:8080 ${Image_name}:${build_number}_${commit}
+        //         """
+        //         }
+        //     }
+        // }
+    }
+}
