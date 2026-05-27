@@ -25,7 +25,7 @@ pipeline {
         }
         stage('Build Images'){
             steps{
-                sh "VERSION=${VERSION} docker compose -f docker-compose-app.yml build"
+                sh "VERSION=${VERSION} docker compose build"
             }
         }
     }
