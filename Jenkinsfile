@@ -10,7 +10,7 @@ pipeline {
     parameters {
         choice(
             name: 'MODULE',
-            choice: ['frontend', 'backend', 'all'],
+            choices: ['frontend', 'backend', 'all'],
             description: 'Choose which module to be deployed'
         )
     }
