@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Build Images'){
             steps{
-                sh "VERSION=${VERSION} docker compose -f docker-compose.yml build emp_frontend emp_backend"
+                sh "FRONTEND_IMAGE=${FRONTEND_IMAGE} BACKEND_IMAGE=${BACKEND_IMAGE} VERSION=${VERSION} docker compose -f docker-compose.yml build emp_frontend emp_backend"
             }
         }
     }

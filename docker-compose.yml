@@ -2,7 +2,7 @@ version: '3'
 services:
   emp_backend:
     container_name: employee_project_be
-    image: sujeeeth29/employee_project_be:${VERSION}
+    image: ${BACKEND_IMAGE}:${VERSION}
     build:
       context: ./backend
     ports:
@@ -28,7 +28,7 @@ services:
         condition: service_healthy
   emp_frontend:
     container_name: employee_project_fe
-    image: sujeeeth29/employee_project_fe:${VERSION}
+    image: ${FRONTEND_IMAGE}:${VERSION}
     build:
       context: ./frontend
     ports:
