@@ -20,6 +20,7 @@ pipeline {
                     echo "GIT Commit: ${GIT_COMMIT}"
                     echo "Frontend Image: ${FRONTEND_IMAGE}:${BUILD_NUMBER}_${GIT_COMMIT}"
                     echo "Backend Image: ${BACKEND_IMAGE}:${BUILD_NUMBER}_${GIT_COMMIT}"
+                    echo "Version: ${VERSION}"
                 }
             }
         }
@@ -28,10 +29,10 @@ pipeline {
                 sh 'docker compose version'
             }
         }
-        // stage('Build Images'){
-        //     steps{
-        //         sh "VERSION=${VERSION} docker compose build"
-        //     }
-        // }
+        stage('Build Images'){
+            steps{
+                sh "VERSION=${VERSION} docker compose build emp_frontend emp_backend"
+            }
+        }
     }
 }
