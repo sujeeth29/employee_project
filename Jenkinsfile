@@ -41,7 +41,7 @@ pipeline {
             steps{
                 script{
                     echo "Modules to be deployed: ${MODULE}"
-                    switch(MODULE) {
+                    switch(params.MODULE) {
                         case 'frontend':
                             sh "FRONTEND_IMAGE=${FRONTEND_IMAGE} docker compose -f docker-compose.yml build emp_frontend"
                         break
@@ -51,9 +51,7 @@ pipeline {
                         default:
                             sh "FRONTEND_IMAGE=${FRONTEND_IMAGE} BACKEND_IMAGE=${BACKEND_IMAGE} docker compose -f docker-compose.yml build emp_frontend emp_backend"
                         break
-
-                    }
-                    
+                    } 
                 }
             }
         }
