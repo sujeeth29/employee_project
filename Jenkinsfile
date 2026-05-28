@@ -35,10 +35,10 @@ pipeline {
                 sh "FRONTEND_IMAGE=${FRONTEND_IMAGE} BACKEND_IMAGE=${BACKEND_IMAGE} VERSION=${VERSION} docker compose -f docker-compose.yml build emp_frontend emp_backend"
             }
         }
-        stage('Run Application'){
-            steps{
+        // stage('Run Application'){
+        //     steps{
 
-            }
-        }
+        //     }
+        // }
     }
 }
