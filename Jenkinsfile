@@ -3,9 +3,9 @@ pipeline {
     environment{
         BUILD_NUMBER="${env.build_number}"
         GIT_COMMIT="${env.GIT_COMMIT.take(7)}"
-        FRONTEND_IMAGE='sujeeeth29/employee_project_fe'
-        BACKEND_IMAGE='sujeeeth29/employee_project_be'
         VERSION="${BUILD_NUMBER}_${GIT_COMMIT}"
+        FRONTEND_IMAGE="sujeeeth29/employee_project_fe:${VERSION}"
+        BACKEND_IMAGE="sujeeeth29/employee_project_be:${VERSION}"
     }
     stages{
         stage('Clean WS'){
@@ -33,6 +33,11 @@ pipeline {
         stage('Build Images'){
             steps{
                 sh "FRONTEND_IMAGE=${FRONTEND_IMAGE} BACKEND_IMAGE=${BACKEND_IMAGE} VERSION=${VERSION} docker compose -f docker-compose.yml build emp_frontend emp_backend"
+            }
+        }
+        stage('Run Application'){
+            steps{
+
             }
         }
     }
