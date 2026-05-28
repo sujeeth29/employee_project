@@ -11,6 +11,7 @@ pipeline {
         stage('Clean WS'){
             steps{
                 cleanWs()
+                checkout scm
             }
         }
         stage('Checking Variables'){
