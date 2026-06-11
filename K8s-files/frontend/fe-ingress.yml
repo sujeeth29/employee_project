@@ -5,7 +5,7 @@ metadata:
   #annotations:
    # kubernetes.io/ingress.class: "nginx"
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx  # mentioning which ingress controller to be used for this ingress resource
   rules:  # Rules the ingress should use
     - host: employee-app.local  # which host we should connect to this ingress service
       http:
