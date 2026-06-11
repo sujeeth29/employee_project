@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment   # mentioning the resource is deployment
+metadata:
+  name: emp-backend-dp  # name of the deployment resource 
+spec:
+  replicas: 1 # number of identical pods required
+  selector:  # identify the pods which has the below label
+    matchLabels:
+      app: emp-backend  
+  template:
+    metadata:
+      labels:
+        app: emp-backend # labled to be given to the pods which are under this deployment
+    spec:
+      containers:
+        - name: emp-app  # name of the container 
+          image: sujeeeth29/employee_project_be:12_22e3544  # image to be used by the containers
+          # imagePullPolicy: Always
+          ports: 
+            - containerPort: 8080  # port number on which containers would run
+          env:  # mentioning the environment variables required for the container to run
+            - name: MYSQL_HOST  # variable name
+              value: "emp-db-ss-0.emp-db-service.employee-project-qa.svc.cluster.local" # direct values mentioning for the variable
+            - name: MYSQL_DB # variable name
+              valueFrom: # mentioning the value to be taken from other k8s object
+                secretKeyRef: # mentioning the values to be taken from object Secrets
+                  name: demo-employee-secret # Secret object name
+                  key: MYSQL_DATABASE # which key value to be taken from the object secrets
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: demo-employee-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo-employee-secret
+                  key: MYSQL_PASSOWRD
+            - name: MYSQL_PORT
+              valueFrom:
+                configMapKeyRef:  # mentioning the value to be taken from the object ConfigMap
+                  name: emp-cm # name of the configmap object
+                  key: port  # which key value to be taken from the configmap object
+            - name: MYSQL_SSL_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: emp-cm
+                  key: ssl_status
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: emp-cm
+                  key: jwt-token

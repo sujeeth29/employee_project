@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emp-fe-dp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emp-fe-pods
+  template:
+    metadata:
+      labels:
+        app: emp-fe-pods
+    spec:
+      containers:
+        - name: emp-fe-con
+          image: demo-emp-fe:v1.0.0
+          ports:
+            - containerPort: 80

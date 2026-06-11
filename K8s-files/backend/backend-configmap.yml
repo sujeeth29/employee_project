@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap  # resource is configmap
+metadata:
+  name: emp-cm  # name of the config map
+data:
+  port: "3306"  # keys and their values
+  jwt-token: "mySuperSecretKey123456789"
+  ssl_status: "false"

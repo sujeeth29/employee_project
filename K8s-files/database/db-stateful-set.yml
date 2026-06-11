@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: emp-db-ss # name of the Stateful set
+spec: 
+  serviceName: emp-db-service # service name that should be attached to 
+  replicas: 1  # required number of pods of this statefuls set 
+  selector:
+    matchLabels:
+      app: emp-db-pod # declaring the pods to which this Satefulset should connect to
+  template:
+    metadata:
+      labels:
+        app: emp-db-pod # declaring the pod names of this SS
+    spec:
+      containers:
+        - name: emp-db # name of this container in pods
+          image: mysql:8 # image that used to create the container
+          ports:
+            - containerPort: 3306 # port on which container should run
+          env:  # declaring the requied environment variables and values
+            - name: MYSQL_DATABASE # key of the environment variable
+              valueFrom:  # getting the values from the created secrets
+                secretKeyRef:
+                  name: demo-employee-secret # name of the secret
+                  key: MYSQL_DATABASE # reference variable from which the value should be taken
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: demo-employee-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo-employee-secret
+                  key: MYSQL_PASSOWRD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo-employee-secret
+                  key: MYSQL_ROOT_PASSWORD
+          volumeMounts:
+            - name: mysql-emp-data   # ref volumename to claim the volume
+              mountPath: /var/lib/mysql  # path inside the container where we get data
+      volumes:   # attaching the required PVC to this SS 
+        - name: mysql-emp-data   # ref volume name declared before
+          persistentVolumeClaim:      
+            claimName: emp-db-vol  # mention the PVC which you claimed before

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: employee-db-volume # name of the persistent volume
+spec:
+  capacity:
+    storage: 1Gi # allocated storage to the volume
+  accessModes:
+    - ReadWriteOnce # access provided to multiple pods on a singlenode
+  persistentVolumeReclaimPolicy: Retain # If the PVC is deleted data will be persist in the volume
+  # persistentVolumeReclaimPolicy: Delete # if the PVC is deleted the data will also be deleted
+  storageClassName: "" # mention the storageclass if exists or if default exists and you don't want to use it use this syntax 
+  hostPath:
+    path: "/data/emp" # it like host (or) bind volume in docker, a directory or a file will be directly mounted to the containers required directory or file
+  
+
+  # Access Modes:
+  # 1. RWO -- volume can be mounted as read-write by a single node, multiple pods on the same node can R,W to that volume
+  # 2. ROX -- volume can be mounted as read-only by multiple nodes simultaniously
+  # 3. RWX -- volume can be mounted by read-write by a multiple nodes simultaniously
+  # 4. RWOP -- volume can be mounted to a single pod, only that pod has complete access on it. 
+  

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emp-db-service   # service name
+spec: 
+  selector:
+    app: emp-db-pod  # pod labels of either deployment or stateful set
+  ports:
+    - port: 3306 # port which we would like to expose this service
+      targetPort: 3306  # port which actual pods are running
+      name: emp-db-port # name for the port
+  clusterIP: None  # this decides the Service is headless

@@ -1,0 +1,67 @@
+apiVersion: networking.k8s.io/v1  # apiversion required for Service ingress
+kind: Ingress # mentioning the service as Ingress
+metadata:
+  name: emp-fe-ingress  # name of the ingress service
+  #annotations:
+   # kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:  # Rules the ingress should use
+    - host: employee-app.local  # which host we should connect to this ingress service
+      http:
+        paths:
+          - path: /   # if the request is for root url i.e employee-app.local
+            pathType: Prefix
+            backend:
+              service:
+                name: emp-fe-svc  # service to be connected if the request got for the above path
+                port:
+                  number: 80  # service port number
+
+          - path: /api # if the request was for <url>/api i.e employee-app.local/api 
+            pathType: Prefix
+            backend:
+              service:
+                name: emp-backend-cip # service to which it should connect
+                port:
+                  number: 8080 # on which port number the service is running
+          
+          - path: /authenticate
+            pathType: Prefix
+            backend:
+              service:  
+                name: emp-backend-cip
+                port:
+                  number: 8080
+
+          - path: /login
+            pathType: Prefix
+            backend:
+              service:  
+                name: emp-backend-cip
+                port:
+                  number: 8080
+
+          - path: /register
+            pathType: Prefix
+            backend:
+              service:  
+                name: emp-backend-cip
+                port:
+                  number: 8080
+
+          - path: /reset-password
+            pathType: Prefix
+            backend:
+              service:  
+                name: emp-backend-cip
+                port:
+                  number: 8080
+                
+          - path: /verify-username
+            pathType: Prefix
+            backend:
+              service:  
+                name: emp-backend-cip
+                port:
+                  number: 8080

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emp-backend-cip   # name of the service
+spec:
+  selector:
+    app: emp-backend  # pod lables of deployment 
+  ports:
+    - protocol: TCP  # 
+      port: 8080 # port number on which we  would like to expose the service
+      targetPort: 8080  # port on which actual pods are running
+  type: ClusterIP # this decides the service is ClusterIP

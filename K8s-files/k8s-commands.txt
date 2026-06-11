@@ -1,0 +1,4 @@
+kubectl create secret generic employee-secret --from-literal=MYSQL_ROOT_PASSWORD=Admin123 \
+    --from-literal=MYSQL_USER=employee_admin --from-literal=MYSQL_PASSWORD=User123 \
+    --from-literal=MYSQL_DATABASE=employee_management
+
