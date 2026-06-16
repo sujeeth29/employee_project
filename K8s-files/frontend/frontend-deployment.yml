@@ -13,7 +13,7 @@ spec:
         app: emp-fe-pods
     spec:
       imagePullSecrets:
-        name: docker-creds
+        - name: docker-creds
       containers:
         - name: emp-fe-con
           image: demo-emp-fe:v1.0.0
