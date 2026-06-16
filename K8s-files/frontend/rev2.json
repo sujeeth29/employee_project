@@ -1,0 +1,77 @@
+{
+    "kind": "ReplicaSet",
+    "apiVersion": "apps/v1",
+    "metadata": {
+        "name": "emp-fe-dp-77d48b49fd",
+        "namespace": "employee-project-qa",
+        "uid": "2dbed712-eacc-4ef0-9029-9e39fc57ae06",
+        "resourceVersion": "96903",
+        "generation": 8,
+        "creationTimestamp": "2026-06-11T06:12:26Z",
+        "labels": {
+            "app": "emp-fe-pods",
+            "pod-template-hash": "77d48b49fd"
+        },
+        "annotations": {
+            "deployment.kubernetes.io/desired-replicas": "3",
+            "deployment.kubernetes.io/max-replicas": "4",
+            "deployment.kubernetes.io/revision": "3",
+            "deployment.kubernetes.io/revision-history": "1"
+        },
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "kind": "Deployment",
+                "name": "emp-fe-dp",
+                "uid": "67ab6b9a-659c-46c9-95d5-4e8e327dbfd1",
+                "controller": true,
+                "blockOwnerDeletion": true
+            }
+        ]
+    },
+    "spec": {
+        "replicas": 0,
+        "selector": {
+            "matchLabels": {
+                "app": "emp-fe-pods",
+                "pod-template-hash": "77d48b49fd"
+            }
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "emp-fe-pods",
+                    "pod-template-hash": "77d48b49fd"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "emp-fe-con",
+                        "image": "demo-emp-fe:v1.0.0",
+                        "ports": [
+                            {
+                                "containerPort": 80,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "securityContext": {},
+                "schedulerName": "default-scheduler"
+            }
+        }
+    },
+    "status": {
+        "replicas": 0,
+        "observedGeneration": 8
+    }
+}

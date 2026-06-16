@@ -2,3 +2,8 @@ kubectl create secret generic employee-secret --from-literal=MYSQL_ROOT_PASSWORD
     --from-literal=MYSQL_USER=employee_admin --from-literal=MYSQL_PASSWORD=User123 \
     --from-literal=MYSQL_DATABASE=employee_management
 
+
+
+To update the image for an deployment
+kubectl set image -n <namespace> deployment/<deployment-name> <container-name>=<image-name>:<tag>
+
