@@ -18,6 +18,13 @@ spec:
           # imagePullPolicy: Always
           ports: 
             - containerPort: 8080  # port number on which containers would run
+          resources:
+            requests:
+              cpu: 100m
+              memory: 500Mi
+            limits:
+              cpu: 300m
+              memory: 1Gi
           env:  # mentioning the environment variables required for the container to run
             - name: MYSQL_HOST  # variable name
               value: "emp-db-ss-0.emp-db-service.employee-project-qa.svc.cluster.local" # direct values mentioning for the variable
@@ -53,18 +60,19 @@ spec:
                   key: jwt-token
           startupProbe:
             httpGet:
-              path: /api/employees
+              path: /api/departments
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 100
+            periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /api/employees
+              path: /api/departments
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /api/employees
+              path: /api/departments
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10

@@ -18,6 +18,13 @@ spec:
           image: mysql:8 # image that used to create the container
           ports:
             - containerPort: 3306 # port on which container should run
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
           env:  # declaring the requied environment variables and values
             - name: MYSQL_DATABASE # key of the environment variable
               valueFrom:  # getting the values from the created secrets
