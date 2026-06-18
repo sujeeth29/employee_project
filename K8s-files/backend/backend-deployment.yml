@@ -51,3 +51,20 @@ spec:
                 configMapKeyRef:
                   name: emp-cm
                   key: jwt-token
+          startupProbe:
+            httpGet:
+              path: /api/employees
+              port: 8080
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/employees
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/employees
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
