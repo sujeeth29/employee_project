@@ -12,11 +12,21 @@ spec:
       labels:
         app: emp-fe-pods
     spec:
-      imagePullSecrets:
-        - name: docker-creds
+      #imagePullSecrets:
+      #  - name: docker-creds
       containers:
         - name: emp-fe-con
           image: demo-emp-fe:v1.0.0
-          imagePullPolicy: Always
+          #imagePullPolicy: Always
           ports:
             - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 10
