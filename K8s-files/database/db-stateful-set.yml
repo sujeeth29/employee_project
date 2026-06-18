@@ -42,6 +42,31 @@ spec:
           volumeMounts:
             - name: mysql-emp-data   # ref volumename to claim the volume
               mountPath: /var/lib/mysql  # path inside the container where we get data
+          startupProbe:  # it confirms the container is started successfuly
+            exec:  # informing to check the status by executing a command
+              command:  # mentioning the command 
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p"$MYSQL_ROOT_PASSWORD" --silent
+            initialDelaySeconds: 10  # start checking after 10 sec of container start
+            periodSeconds: 5 # check periodically for every 5 seconds
+            failureThreshold: 5  # allowd up to 5 failure attempts
+          # liveness and readiness probes starts checking only after the startup probe was success
+          livenessProbe: # in confirms the container is running successfully
+            exec:  # informing to check the status by executing a command
+              command:  # mentioning the command 
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p"$MYSQL_ROOT_PASSWORD" --silent
+            initialDelaySeconds: 5 # start checking after 10 sec of container start 
+            periodSeconds: 10  # check periodically for every 10 seconds
+          readinessProbe:  # it confirms the container is ready to accept the traffic to serve application
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SELECT 1" >/dev/null 2>&1
+            periodSeconds: 10  # check periodically for every 10 seconds
       volumes:   # attaching the required PVC to this SS 
         - name: mysql-emp-data   # ref volume name declared before
           persistentVolumeClaim:      
