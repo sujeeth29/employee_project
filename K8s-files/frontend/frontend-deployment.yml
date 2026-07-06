@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: emp-fe-dp
+  namespace: demo-emp
 spec:
   replicas: 2
   selector:
@@ -16,7 +17,7 @@ spec:
       #  - name: docker-creds
       containers:
         - name: emp-fe-con
-          image: demo-emp-fe:v1.0.0
+          image: sujeeeth29/employee_project_fe:26
           #imagePullPolicy: Always
           resources:
             requests:

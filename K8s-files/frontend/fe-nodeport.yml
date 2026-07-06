@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: emp-fe-np  # name of the service
+  namespace: demo-emp
 spec:
   selector:  # mentioning which pods to be selected based on the below labels
     app: emp-fe-pods
@@ -10,4 +11,4 @@ spec:
     - protocol: TCP 
       port: 80 # on which port does this service should use
       targetPort: 80 # ports on which actual containers are running
-      nodePort: 31000  # which port to be opened on node to expose this service to internet
+      #nodePort: 31000  # which port to be opened on node to expose this service to internet

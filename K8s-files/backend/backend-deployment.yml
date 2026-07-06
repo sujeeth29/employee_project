@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment   # mentioning the resource is deployment
 metadata:
-  name: emp-backend-dp  # name of the deployment resource 
+  name: demo-emp-backend-dp  # name of the deployment resource
+  namespace: demo-emp 
 spec:
   replicas: 1 # number of identical pods required
   selector:  # identify the pods which has the below label
@@ -27,22 +28,22 @@ spec:
               memory: 1Gi
           env:  # mentioning the environment variables required for the container to run
             - name: MYSQL_HOST  # variable name
-              value: "emp-db-ss-0.emp-db-service.employee-project-qa.svc.cluster.local" # direct values mentioning for the variable
+              value: "emp-db-service" # direct values mentioning for the variable
             - name: MYSQL_DB # variable name
               valueFrom: # mentioning the value to be taken from other k8s object
                 secretKeyRef: # mentioning the values to be taken from object Secrets
-                  name: demo-employee-secret # Secret object name
+                  name: backend-sc # Secret object name
                   key: MYSQL_DATABASE # which key value to be taken from the object secrets
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: demo-employee-secret
+                  name: backend-sc
                   key: MYSQL_USER
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: demo-employee-secret
-                  key: MYSQL_PASSOWRD
+                  name: backend-sc
+                  key: MYSQL_PASSWORD
             - name: MYSQL_PORT
               valueFrom:
                 configMapKeyRef:  # mentioning the value to be taken from the object ConfigMap
@@ -55,8 +56,8 @@ spec:
                   key: ssl_status
             - name: JWT_SECRET
               valueFrom:
-                configMapKeyRef:
-                  name: emp-cm
+                secretKeyRef:
+                  name: backend-sc
                   key: jwt-token
           startupProbe:
             httpGet:

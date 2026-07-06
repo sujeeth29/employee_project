@@ -1,0 +1,130 @@
+# Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-volume
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes: 
+    - ReadWriteOnce
+  PersistentVolumeClaimPolicy: Retain
+  hostPath: 
+    path: /etc/demo
+  storageClassName: ""
+
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-volume-claim
+spec: 
+  accessModes:
+    - ReadWriteOnce
+  volumeName: demo-volume
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ""
+
+---
+# Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-secrets
+type: Opeque
+data: # use data if the values are already base64-encoded (use stringData if the values aren't base64-encoded are plain text values)
+  key1=value1
+  key2=value2
+
+---
+# StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: demo-statefulset
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-ss
+  template:
+    metadata:
+      Labels:
+        app: demo-ss
+    spec:
+      containers:
+        - name: demo-ss-container
+          image: mysql:8
+          ports:
+            - containerPort: 3306
+          env:
+            - name: key1
+              valueFrom:
+                secretRefKey:
+                  name: demo-secrets
+                  key: key1
+            - name: key2
+              valueFrom:
+                secretKeyRef:
+                  name: demo-secrets
+                  key: key2
+          resources:
+            requests:
+              cpu: 200m
+              memory: 400Mi
+            limits:
+              cpu: 400m
+              memory: 600Mi
+          volumeMounts:
+            - name: demo-ss-volume
+              mountPath: /var/lib/mysql
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p"$key1" --silent
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            exec: 
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p"$key1" --silent
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            exec: 
+              command:
+                - /bin/sh
+                - -c
+                - mysqladmin ping -h localhost -u root -p"$key1"
+            initialDelaySeconds: 20
+            periodSeconds: 10
+      volumes:
+        - name: demo-ss-volume
+          PersistentVolumeClaim:
+            claimName: demo-volume-claim
+
+---
+# Headless Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-svc-headless
+spec:
+  clusterIP: None
+  selector:
+    app: demo-ss
+  ports:
+    - port: 3306
+      targetPort: 3306
+      name: demo-ss-svc-port
+
+---
+
+  

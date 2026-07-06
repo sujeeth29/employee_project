@@ -1,9 +1,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: emp-db-ss # name of the Stateful set
+  name: demo-emp-db-ss # name of the Stateful set
+  namespace: demo-emp
 spec: 
-  serviceName: emp-db-service # service name that should be attached to 
+  serviceName: demo-emp-db-service # service name that should be attached to 
   replicas: 1  # required number of pods of this statefuls set 
   selector:
     matchLabels:
@@ -15,7 +16,7 @@ spec:
     spec:
       containers:
         - name: emp-db # name of this container in pods
-          image: mysql:8 # image that used to create the container
+          image: mysql:8.4.10 # image that used to create the container
           ports:
             - containerPort: 3306 # port on which container should run
           resources:
@@ -40,7 +41,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: demo-employee-secret
-                  key: MYSQL_PASSOWRD
+                  key: MYSQL_PASSWORD
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -77,4 +78,4 @@ spec:
       volumes:   # attaching the required PVC to this SS 
         - name: mysql-emp-data   # ref volume name declared before
           persistentVolumeClaim:      
-            claimName: emp-db-vol  # mention the PVC which you claimed before
+            claimName: demo-emp-db-volc  # mention the PVC which you claimed before

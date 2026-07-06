@@ -1,0 +1,42 @@
+# 
+eksctl create cluster \
+  --name demo-eks \
+  --region us-east-1 \
+  --version 1.30 \
+  --nodegroup-name workers \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --managed
+
+eksctl create cluster \
+  --name demo-eks \
+  --version 1.34 \
+  --region us-east-1 \
+  --nodegroup-name demo-worker \
+  --vpc-public-subnets subnet-01412d24fa4194bee,subnet-0b8ecf46434a454b4 \
+  --managed \
+  --node-type t3.medium \
+  --nodes 1 \
+  --nodes-min 1 \
+  --nodes-max 3 \
+  --node-volume-size 30
+
+eksctl utils associate-iam-oidc-provider \
+  --cluster demo-eks \
+  --approve
+
+eksctl create iamserviceaccount \
+  --cluster=demo-eks \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --attach-policy-arn=arn:aws:iam::<account-id>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --override-existing-serviceaccounts \
+  --approve
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=demo-eks \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller

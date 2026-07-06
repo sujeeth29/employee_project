@@ -22,7 +22,7 @@ FROM nginx:alpine
 # Copy the build artifacts from the builder stage
 COPY --from=builder /app/build /usr/share/nginx/html/
 RUN ls -al /usr/share/nginx/html
-#COPY fe.conf /etc/nginx/conf.d/default.conf
+COPY fe.conf /etc/nginx/conf.d/default.conf
 # Expose the default port for Nginx
 EXPOSE 80
 

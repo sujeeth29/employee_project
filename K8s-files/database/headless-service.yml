@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: emp-db-service   # service name
+  namespace: demo-emp
 spec: 
   selector:
     app: emp-db-pod  # pod labels of either deployment or stateful set

@@ -4,17 +4,22 @@ metadata:
   name: emp-fe-ingress  # name of the ingress service
   #annotations:
    # kubernetes.io/ingress.class: "nginx"
+  namespace: demo-emp
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
 spec:
-  ingressClassName: nginx  # mentioning which ingress controller to be used for this ingress resource
+  #ingressClassName: nginx  # mentioning which ingress controller to be used for this ingress resource
   rules:  # Rules the ingress should use
-    - host: employee-app.local  # which host we should connect to this ingress service
-      http:
+    #- host: employee-app.local  # which host we should connect to this ingress service
+    - http:
         paths:
           - path: /   # if the request is for root url i.e employee-app.local
             pathType: Prefix
             backend:
               service:
-                name: emp-fe-svc  # service to be connected if the request got for the above path
+                name: demo-emp-fe-svc  # service to be connected if the request got for the above path
                 port:
                   number: 80  # service port number
 
@@ -22,7 +27,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: emp-backend-cip # service to which it should connect
+                name: demo-emp-backend-cip # service to which it should connect
                 port:
                   number: 8080 # on which port number the service is running
           
@@ -30,7 +35,7 @@ spec:
             pathType: Prefix
             backend:
               service:  
-                name: emp-backend-cip
+                name: demo-emp-backend-cip
                 port:
                   number: 8080
 
@@ -38,7 +43,7 @@ spec:
             pathType: Prefix
             backend:
               service:  
-                name: emp-backend-cip
+                name: demo-emp-backend-cip
                 port:
                   number: 8080
 
@@ -46,7 +51,7 @@ spec:
             pathType: Prefix
             backend:
               service:  
-                name: emp-backend-cip
+                name: demo-emp-backend-cip
                 port:
                   number: 8080
 
@@ -54,7 +59,7 @@ spec:
             pathType: Prefix
             backend:
               service:  
-                name: emp-backend-cip
+                name: demo-emp-backend-cip
                 port:
                   number: 8080
                 
@@ -62,6 +67,6 @@ spec:
             pathType: Prefix
             backend:
               service:  
-                name: emp-backend-cip
+                name: demo-emp-backend-cip
                 port:
                   number: 8080
