@@ -7,7 +7,7 @@ spec:
   accessModes:
     - ReadWriteOnce  # mentioning the access case as ReadWriteOnce
   #volumeName: employee-db-volume # name of the already PV created 
-  #storageClassName: "" # Mentioned to not to use the default storageclass
+  storageClassName: "" # Mentioned to not to use the default storageclass
   resources:
     requests:
       storage: 1Gi # claiming 1Gi space from the PV

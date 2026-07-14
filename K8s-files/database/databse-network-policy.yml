@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: demo-emp-db-netp
+  namespace: demo-emp
+spec:
+  podSelector:
+    matchLabels:
+      app: emp-db-pod
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: emp-backend
+      ports:
+        - protocol: TCP
+          port: 3306
+  egress:
+    - to: 
+      - podSelector:
+          matchLabels:
+            app: emp-backend
+      ports:
+        - protocol: TCP
+          port: 3306
+      

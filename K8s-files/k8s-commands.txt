@@ -11,3 +11,25 @@ kubectl set image -n <namespace> deployment/<deployment-name> <container-name>=<
 kubectl rollout status deployment <deployment-name> -n <name-space>
 
 kubectl rollout history deployment <deployment-name> -n <name-space>
+
+aws ec2 describe-security-groups --group-ids sg-0ec44927b7354c44a \
+  --query "SecurityGroups[0].IpPermissions"
+
+# Variables
+AWS_ACCOUNT_ID=
+AWS_REGION=us-east-1
+REPO_NAME=my-app
+
+# Authenticate
+aws ecr get-login-password --region $AWS_REGION | docker login \
+  --username AWS \
+  --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+# Build
+docker build -t $REPO_NAME .
+
+# Tag
+docker tag $REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
+
+# Push
+docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
