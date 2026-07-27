@@ -43,10 +43,30 @@ resource "aws_iam_role" "demo_eks_cluster_role" {
     })
 }
 
-resource "aws_iam_role_policy_attachment" "demo_eks_policy_attach" {
+resource "aws_iam_role_policy_attachment" "demo_eks_cluster_policy_1" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role = aws_iam_role.demo_eks_cluster_role.name
 }
+
+# resource "aws_iam_role_policy_attachment" "demo_eks_cluster_policy_2" {
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonEKSComputePolicy"
+#     role = aws_iam_role.demo_eks_cluster_role.name
+# }
+
+# resource "aws_iam_role_policy_attachment" "demo_eks_cluster_policy_3" {
+#     role = aws_iam_role.demo_eks_cluster_role.name
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonEKSBlockStoragePolicy"
+# }
+
+# resource "aws_iam_role_policy_attachment" "demo_eks_cluster_policy_4" {
+#     role = aws_iam_role.demo_eks_cluster_role.name
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+# }
+
+# resource "aws_iam_role_policy_attachment" "demo_eks_cluster_policy_5" {
+#     role = aws_iam_role.demo_eks_cluster_role.name
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonEKSNetworkingPolicy"
+# }
 
 resource "aws_key_pair" "demo_eks_node_group_key" {
     key_name = "demo-eks-${var.env}-NG-key"
@@ -64,6 +84,13 @@ resource "aws_security_group" "demo_eks_bastion_sg" {
         cidr_blocks = ["0.0.0.0/0"]
         from_port = 22
         to_port = 22
+        protocol = "tcp"
+    }
+
+    ingress {
+        cidr_blocks = [ "0.0.0.0/0" ]
+        from_port = 8080
+        to_port = 8080
         protocol = "tcp"
     }
     egress  {
@@ -96,6 +123,7 @@ resource "aws_instance" "demo_eks_bastion" {
     subnet_id = var.demo_eks_public_subnet_1
     key_name = aws_key_pair.demo_eks_node_group_key.key_name
     iam_instance_profile = aws_iam_instance_profile.demo_eks_bastion_instance_profile.name
+    user_data = file("${path.module}/bastion_installation_script.sh")
     tags = {
       Name = "demo-eks-${var.env}-bastion"
     }
@@ -235,4 +263,51 @@ resource "aws_eks_access_policy_association" "demo_eks_bastion_access_asso" {
       type = "cluster"
     }
     depends_on = [ aws_eks_access_entry.demo_eks_bastion_access ]
+}
+
+
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.demo_eks_cluster.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  url             = aws_eks_cluster.demo_eks_cluster.identity[0].oidc[0].issuer
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+}
+
+resource "aws_iam_policy" "demo_eks_alb_controller" {
+    name = "AWSLoadBalancerControllerPolicy"
+    policy = file("${path.module}/iam_policy.json")
+}
+
+data "aws_iam_policy_document" "demo_eks_alb_controller_assume_role" {
+    statement {
+      effect = "Allow"
+      actions = [ "sts:AssumeRoleWithWebIdentity" ]
+      principals {
+        type = "Federated"
+        identifiers = [ aws_iam_openid_connect_provider.eks.arn ]
+      }
+      condition {
+        test = "StringEquals"
+        variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
+        values = [ "system:serviceaccount:kube-system:aws-load-balancer-controller" ]
+      }
+      condition {
+        test = "StringEquals"
+        variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:aud"
+        values = [ "sts.amazonaws.com" ]
+      }
+    }
+}
+
+resource "aws_iam_role" "demo_eks_alb_controller_role" {
+    name = "AmazonEKSLoadBalancerControllerRole"
+    assume_role_policy = data.aws_iam_policy_document.demo_eks_alb_controller_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "demo_eks_alb_controller_role_policy" {
+    role = aws_iam_role.demo_eks_alb_controller_role.name
+    policy_arn = aws_iam_policy.demo_eks_alb_controller.arn
 }

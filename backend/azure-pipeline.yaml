@@ -1,0 +1,81 @@
+trigger:
+  branches:
+    include:
+      - main
+variables:
+  - group: variable-group
+pool:
+  vmImage: 'ubuntu-latest'
+stages:   
+  - stage: 'Install'
+    jobs:
+      - job: CheckingScriptInstall
+        steps:
+          - script: echo "Deploying ..." && sleep 10
+          - script: mvn clean install
+            displayName: 'Checking maven install with script'
+      - job: CheckingTaskMaven
+        steps:
+          - task: Maven@4
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'clean install'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.11'
+              mavenVersionOption: 'Default'
+              mavenAuthenticateFeed: false 
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false 
+            displayName: 'Checking task maven install with task'
+  - stage: 'Validate'
+    jobs: 
+      - job: ValidatesScript 
+        steps:
+          - script: mvn validate
+            displayName: 'Running Validate'
+      - job: ValidateTask 
+        steps: 
+          - script: |
+              wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+              tar -xzf apache-maven-3.9.16-bin.tar.gz -C $(Agent.ToolsDirectory)
+              echo "##vso[task.prependpath]$(Agent.ToolsDirectory)/apache-maven-3.9.16/bin"
+            displayName: 'Download and Extract specific maven version'
+          - script: mvn -version
+          - task: Maven@4
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'validate'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.11'
+              mavenVersionOption: 'Path'
+              mavenPath: '$(Agent.ToolsDirectory)/apache-maven-3.9.16'
+              mavenSetM2Home: true 
+              mavenAuthenticateFeed: false
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+            displayName: 'Running validate through installed maven'
+  - stage: 'CheckingLibraryEnvironmentVariables'
+    variables:
+      stageVar: 'This is the stage Variable'
+    jobs:
+      - job: 
+        variables:
+          jobVar: 'This is a Job Variable '
+        steps:
+          - script: |
+              echo "Global Variable Environment: $(Environment)"
+              echo "Global Variable SShuser : $(sshuser)"
+              echo "Global Variable Password: $Password" 
+            env: 
+              Password: $(passwd)
+            displayName: 'Printing Global variable'
+          - script: | 
+              echo "Stage Variable : $(stageVar)"
+            displayName: 'Printing Stage Variable'
+          - script: |
+              echo "Job Variable: $(jobVar)"
+            displayName: 'Printing Job variable'

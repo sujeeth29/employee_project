@@ -21,9 +21,9 @@ AWS_REGION=us-east-1
 REPO_NAME=my-app
 
 # Authenticate
-aws ecr get-login-password --region $AWS_REGION | docker login \
+aws ecr get-login-password --region us-east-1 | docker login \
   --username AWS \
-  --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+  --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
 
 # Build
 docker build -t $REPO_NAME .
