@@ -17,7 +17,7 @@ spec:
       #  - name: docker-creds
       containers:
         - name: emp-fe-con
-          image: sujeeeth29/employee_project_fe:26
+          image: sujeeeth29/employee-management-fe:1.0.109
           #imagePullPolicy: Always
           resources:
             requests:

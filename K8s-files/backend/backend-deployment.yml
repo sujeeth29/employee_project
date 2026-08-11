@@ -13,9 +13,11 @@ spec:
       labels:
         app: emp-backend # labled to be given to the pods which are under this deployment
     spec:
+      imagePullSecrets:
+        - name: dock-cred
       containers:
         - name: emp-app  # name of the container 
-          image: sujeeeth29/employee_project_be:12_22e3544  # image to be used by the containers
+          image: sujeeeth29/employee-management-be:1.0.105  # image to be used by the containers
           # imagePullPolicy: Always
           ports: 
             - containerPort: 8080  # port number on which containers would run

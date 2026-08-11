@@ -64,6 +64,8 @@
     "@babel/preset-react": "^7.27.1",
     "autoprefixer": "^10.4.20",
     "babel-jest": "^30.0.4",
+    "eslint": "^8.57.1",
+    "eslint-plugin-jest": "^25.7.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "postcss": "^8.4.41",

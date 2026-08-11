@@ -54,7 +54,7 @@ resource "kubernetes_service_account_v1" "demo_eks_alb_controller" {
         "eks.amazonaws.com/role-arn" = module.demo_eks_cluster.demo_eks_alb_controller_role_arn
       }
     }
-    depends_on = [ aws_eks_access_entry.terraform_admin ]
+    depends_on = [ aws_eks_access_policy_association.terraform_admin ]
 }
 
 data "aws_region" "current" {}
@@ -130,4 +130,65 @@ resource "aws_eks_access_policy_association" "terraform_admin" {
       type = "cluster"
     }
     depends_on = [ aws_eks_access_entry.terraform_admin ]
+}
+
+resource "aws_iam_openid_connect_provider" "demo_eks_azure_connection" {
+    url = "https://vstoken.dev.azure.com/${var.azure_org_id}"
+    client_id_list = [ 
+        "api://AzureADTokenExchange"
+     ]
+}
+
+resource "aws_iam_role" "demo_eks_azure_devops" {
+    name = "AzureDevopsEksDeploy"
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [{
+            Effect = "Allow"
+            Principal = {
+                Federated = aws_iam_openid_connect_provider.demo_eks_azure_connection.arn
+            }
+            Action = [
+                "sts:AssumeRoleWithWebIdentity"
+            ]
+            Condition = {
+                StringEquals = {
+                    "vstoken.dev.azure.com/${var.azure_org_id}:aud"= "api://AzureADTokenExchange"
+                
+                    "vstoken.dev.azure.com/${var.azure_org_id}:sub"= "sc://Demo-org203/Demo-org-project-B/aws-service-connection"
+                }
+            }
+        }]
+    })
+}
+
+resource "aws_iam_role_policy" "demo_eks_azure_devops" {
+    name = "AzureDevopsEksPolicy"
+    role = aws_iam_role.demo_eks_azure_devops.id
+    policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [{
+            Effect = "Allow"
+            Action = [
+                "eks:DescribeCluster"
+            ]
+            Resource = module.demo_eks_cluster.demo_eks_cluster_arn
+        }]
+    })
+}
+
+resource "aws_eks_access_entry" "demo_eks_azure_devops" {
+    cluster_name = module.demo_eks_cluster.demo_eks_cluster_name
+    principal_arn = aws_iam_role.demo_eks_azure_devops.arn
+    type = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "demo_eks_azure_devops" {
+    cluster_name = module.demo_eks_cluster.demo_eks_cluster_name
+    principal_arn = aws_iam_role.demo_eks_azure_devops.arn
+    policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+    access_scope {
+      type = "cluster"
+    }
 }

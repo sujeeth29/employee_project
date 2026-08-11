@@ -33,3 +33,5 @@ docker tag $REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$
 
 # Push
 docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
+
+ aws eks update-kubeconfig --region us-east-1 --name demo-eks-qa
